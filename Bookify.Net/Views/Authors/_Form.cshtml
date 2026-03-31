@@ -1,0 +1,25 @@
+﻿@model AuthorFormViewModel
+
+
+
+<form asp-action="@(Model?.id > 0 ? "Edit" : "Create")"
+      data-ajax="true"
+      data-ajax-method="post"
+      data-ajax-begin="onModalBegin"
+      data-ajax-success="onModalSuccess"
+      data-ajax-failure="onModalfailure"
+      data-ajax-complete="onModalComplete">
+
+    @if (Model?.id > 0)
+    {
+        <input type="hidden" asp-for="id" />
+    }
+
+
+    <partial name="_ModelFooter" />
+
+   
+</form>
+
+
+

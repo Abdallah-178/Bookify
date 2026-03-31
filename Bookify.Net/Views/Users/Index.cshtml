@@ -1,0 +1,167 @@
+﻿@model IEnumerable<UserViewModel>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+@{
+    ViewData["Title"] = "Users";
+}
+
+@section DataTableStyles {
+    <link href="~/assets/plugins/datatables/datatables.bundle.css" rel="stylesheet" />
+}
+
+<div class="alert  bg-light-primary border border-primary border-3 border-dashed d-flex justify-content-between w-100 p-5 mb-10">
+    <div class="d-flex align-items-center">
+        <div class="symbol-label fs-2 fw-semibold text-success pe-2">
+            
+            <svg class="svg-icon svg-icon-2x svg-icon-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.0173 9H15.3945C14.2833 9 13.263 9.61425 12.7431 10.5963L12.154 11.7091C12.0645 11.8781 12.1072 12.0868 12.2559 12.2071L12.6402 12.5183C13.2631 13.0225 13.7556 13.6691 14.0764 14.4035L14.2321 14.7601C14.2957 14.9058 14.4396 15 14.5987 15H18.6747C19.7297 15 20.4057 13.8774 19.912 12.945L18.6686 10.5963C18.1487 9.61425 17.1285 9 16.0173 9Z" fill="currentColor" />
+                <rect opacity="0.3" x="14" y="4" width="4" height="4" rx="2" fill="currentColor" />
+                <path d="M4.65486 14.8559C5.40389 13.1224 7.11161 12 9 12C10.8884 12 12.5961 13.1224 13.3451 14.8559L14.793 18.2067C15.3636 19.5271 14.3955 21 12.9571 21H5.04292C3.60453 21 2.63644 19.5271 3.20698 18.2067L4.65486 14.8559Z" fill="currentColor" />
+                <rect opacity="0.3" x="6" y="5" width="6" height="6" rx="3" fill="currentColor" />
+            </svg>
+
+          
+        </div>
+
+        <div class="d-flex flex-column pe-0 pe-sm-10">
+            <h5 class="mb-1">Users</h5>
+
+        </div>
+
+    </div>
+    <div>
+        <a href="javascript:;" class="btn btn-sm btn-primary js-render-modal " data-title="Add User" data-url="/Users/Create">
+            <i class="bi bi-plus-square-fill"></i>
+            Create New Users
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header align-items-center py-5 gap-2 gap-md-5 pb-0">
+        <div class="card-title">
+
+            <div class="d-flex align-items-center position-relative my-1">
+                <!-- Search Icon -->
+                <span class="position-absolute ms-4">
+                    <span class="svg-icon svg-icon-muted svg-icon-2hx">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
+                                  height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
+                                  fill="currentColor" />
+                            <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3
+                         11 3C15.4444 3 19 6.55556 19 11C19 15.4444
+                         15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333
+                         5 11C5 14.4667 7.53333 17 11 17C14.4667
+                         17 17 14.4667 17 11C17 7.53333
+                         14.4667 5 11 5Z"
+                                  fill="currentColor" />
+                        </svg>
+                    </span>
+                </span>
+
+                <!-- Search Input -->
+                <input type="text"
+                       data-kt-filter="search"
+                       class="form-control form-control-solid w-250px ps-14"
+                       placeholder="Search Report" />
+            </div>
+
+
+            <div id="kt_datatable_example_1_export" class="d-none"></div>
+
+        </div>
+        <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+
+            <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                <span class="svg-icon svg-icon-muted svg-icon-2hx">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path opacity="0.3" d="M10 4H21C21.6 4 22 4.4 22 5V7H10V4Z" fill="currentColor" />
+                        <path opacity="0.3" d="M13 14.4V9C13 8.4 12.6 8 12 8C11.4 8 11 8.4 11 9V14.4H13Z" fill="currentColor" />
+                        <path d="M10.4 3.60001L12 6H21C21.6 6 22 6.4 22 7V19C22 19.6 21.6 20 21 20H3C2.4 20 2 19.6 2 19V4C2 3.4 2.4 3 3 3H9.20001C9.70001 3 10.2 3.20001 10.4 3.60001ZM13 14.4V9C13 8.4 12.6 8 12 8C11.4 8 11 8.4 11 9V14.4H8L11.3 17.7C11.7 18.1 12.3 18.1 12.7 17.7L16 14.4H13Z" fill="currentColor" />
+                    </svg>
+                </span>
+                Export
+            </button>
+
+            <div id="kt_datatable_example_export_menu" class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4" data-kt-menu="true">
+
+                <div class="menu-item px-3">
+                    <a href="#" class="menu-link px-3" data-kt-export="copy">
+                        Copy to clipboard
+                    </a>
+                </div>
+
+                <div class="menu-item px-3">
+                    <a href="#" class="menu-link px-3" data-kt-export="excel">
+                        Export as Excel
+                    </a>
+                </div>
+
+                <div class="menu-item px-3">
+                    <a href="#" class="menu-link px-3" data-kt-export="csv">
+                        Export as CSV
+                    </a>
+                </div>
+
+                <div class="menu-item px-3">
+                    <a href="#" class="menu-link px-3" data-kt-export="pdf">
+                        Export as PDF
+                    </a>
+                </div>
+
+            </div>
+
+            <div id="kt_datatable_example_buttons" class="d-none"></div>
+
+        </div>
+    </div>
+    <div class="card-body pt-0">
+
+        <div class="table-responsive">
+            <table class="table gs-7 gy-7 gx-2 align-middle js-DatataTable" data-document-title="Users">
+                <thead>
+                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
+                        <th>Full Name</th>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Created On</th>
+                        <th>Last Updated On</th>
+                        <th class="js-no-export">Action</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <partial name="_UsersRow" model="@user" />
+
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+
+    </div>
+
+</div>
+
+
+
+
+<input type="hidden" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@section plugins {
+    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
+    <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+}
+
+
+

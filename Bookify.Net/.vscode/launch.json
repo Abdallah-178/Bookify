@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "C#: Bookify.Net",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}\\Bookify.Net.csproj",
+            "launchConfigurationId": "TargetFramework=;https"
+        }
+    ]
+}

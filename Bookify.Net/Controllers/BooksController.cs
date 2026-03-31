@@ -1,0 +1,308 @@
+﻿using CloudinaryDotNet;
+using Microsoft.Extensions.Options;
+using System.Data;
+using System.Linq.Dynamic.Core;
+
+namespace Bookify.Net.Controllers
+{
+    [Authorize(Roles = AppRoles.Archive)]
+    public class BooksController : Controller
+    {
+
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
+        private readonly IImageService _imageService;
+
+        private readonly Cloudinary _cloudinary;
+        public BooksController(ApplicationDbContext context,
+            IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
+        {
+            _context = context;
+            _mapper = mapper;
+
+
+
+
+            Account account = new()
+            {
+
+                Cloud = cloudinary.Value.Cloud,
+                ApiKey = cloudinary.Value.ApiKey,
+                ApiSecret = cloudinary.Value.ApiSecret,
+
+
+            };
+
+            _cloudinary = new Cloudinary(account);
+            _cloudinary.Api.Secure = true;
+            _imageService = imageService;
+            _imageService = imageService;
+        }
+
+
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [AjaxOnly]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult GetBooks()
+        {
+            var skip = int.Parse(Request.Form["start"]);
+            var pageSize = int.Parse(Request.Form["length"]);
+
+
+            var SearchValue = Request.Form["search[value]"];
+
+
+
+            var sortColumnIndex = Request.Form["order[0][column]"];
+            var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
+            var sortColumnDirection = Request.Form["order[0][dir]"];
+
+
+
+            IQueryable<Book> books = _context.Books.Include(a => a.Author).Include(c => c.Categories)
+                                                                         .ThenInclude(c => c.Category);
+
+            if (!string.IsNullOrEmpty(SearchValue))
+                books = books.Where(b => b.Title.Contains(SearchValue) || b.Author!.Name.Contains(SearchValue));
+
+            books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
+
+            var data = books.Skip(skip).Take(pageSize).ToList();
+
+            var mappedDate = _mapper.Map<IEnumerable<BookViewModel>>(data);
+
+            var recordsTotal = books.Count();
+
+            var jsonData = new { recordsFiltered = recordsTotal, recordsTotal, data = mappedDate };
+
+            return Ok(jsonData);
+        }
+
+
+
+        public IActionResult Details(int id)
+        {
+            var book = _context.Books
+                .Include(a => a.Author)
+                .Include(c => c.Copies)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category)
+
+
+                .SingleOrDefault(b => b.id == id);
+
+            if (book is null)
+                return NotFound();
+
+            var ViewModel = _mapper.Map<BookViewModel>(book);
+
+            return View(ViewModel);
+        }
+
+
+
+
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View("Form", PopulateViewModel());
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(BookFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
+
+            var book = _mapper.Map<Book>(model);
+
+            // Begin Save File In Server //
+            if (model.Image is not null)
+            {
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}"; // Give Him Guid Name+Extenstion
+
+                var result = await _imageService.UploadAsync(model.Image, imageName, "/assets/images/Books", hasThumbnail: true);
+                if (!result.isUploaded)
+                {
+                    ModelState.AddModelError(nameof(Image), result.errorMessage!);
+                    return View("Form", PopulateViewModel(model));
+
+                }
+                book.ImageUrl = imageName;
+                book.custom_img = imageName;
+
+
+            }
+            // End Save File In Server //
+            book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            foreach (var item in model.SelectedCategories)
+                book.Categories.Add(new BookCategory { CategoryId = item });
+
+            _context.Add(book);
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Details), new { id = book.id });
+        }
+
+
+
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var book = _context.Books.Include(c => c.Categories).SingleOrDefault(b => b.id == id);
+
+            if (book == null)
+                return NotFound();
+
+
+            var ViewModel = _mapper.Map<BookFormViewModel>(book);
+
+
+            ViewModel.SelectedCategories = book.Categories.Select(c => c.CategoryId).ToList(); // Handel Categories
+
+            return View("Form", PopulateViewModel(ViewModel));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(BookFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
+
+            var book = _context.Books.Include(c => c.Categories).Include(c => c.Copies).SingleOrDefault(b => b.id == model.id);
+
+            if (book is null)
+                return NotFound();
+
+            // Begin  Handel File Upload 
+            if (model.Image is not null)
+            {
+                if (!string.IsNullOrEmpty(book.ImageUrl))
+                {
+                    _imageService.Delete(book.ImageUrl, book.custom_img);
+
+                }
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}"; // Give Him Guid Name+Extenstion
+
+                var result = await _imageService.UploadAsync(model.Image, imageName, "/assets/images/Books", hasThumbnail: true);
+                if (!result.isUploaded)
+                {
+                    ModelState.AddModelError(nameof(Image), result.errorMessage!);
+                    return View("Form", PopulateViewModel(model));
+
+                }
+                model.ImageUrl = imageName;
+                model.custom_img = imageName;
+
+
+            }
+            else if (!string.IsNullOrEmpty(book.ImageUrl))
+            {
+                model.ImageUrl = book.ImageUrl;   // save
+                model.custom_img = book.custom_img;
+            }
+
+            // End  Handel File Upload 
+
+            book = _mapper.Map(model, book);
+            book.LastUpdatedOn = DateTime.UtcNow;
+            book.LastUpdateedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+            foreach (var item in model.SelectedCategories)
+                book.Categories.Add(new BookCategory { CategoryId = item });
+
+            if (!model.IsAvilableForRentel)
+            {
+                foreach (var copy in book.Copies)
+                    copy.IsAvailableForRental = false;
+
+            }
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Details), new { id = book.id });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
+        {
+            BookFormViewModel viewModel = model is null ? new BookFormViewModel() : model;
+
+            var AuthorList = _context.Authors.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
+            var CategoryList = _context.Categories.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
+
+
+            viewModel.Authors = _mapper.Map<IEnumerable<SelectListItem>>(AuthorList);
+            viewModel.Categories = _mapper.Map<IEnumerable<SelectListItem>>(CategoryList);
+
+
+            return viewModel;
+        }
+
+        private string GetThumbnailUrl(string url)
+        {
+            var separator = "image/upload/";
+            var urlparts = url.Split(separator);
+            var thumbnailUrl = $"{urlparts[0]}{separator}e_cartoonify:11:0/{urlparts[1]}";
+
+            return thumbnailUrl;
+        }
+        public IActionResult AllowItem(BookFormViewModel model)
+        {
+            var book = _context.Books.SingleOrDefault(c => c.Title == model.Title && c.AuthorId == model.AuthorId);
+
+            var isAllawed = book is null || book.id.Equals(model.id);
+
+            return Json(isAllawed);
+
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Togglestatus(int id)
+        {
+
+
+            var book = _context.Books.Find(id);
+
+            if (book is null)
+                return NotFound();
+
+
+            book.IsDeleted = !book.IsDeleted;
+            book.LastUpdatedOn = DateTime.Now;
+            book.LastUpdateedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+            _context.SaveChanges();
+
+
+
+            return Ok(book.LastUpdatedOn.ToString());
+        }
+
+
+
+    }
+}

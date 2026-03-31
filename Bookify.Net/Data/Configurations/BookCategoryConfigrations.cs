@@ -1,0 +1,33 @@
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Bookify.Net.Data.Configurations
+{
+    public class BookCategoryConfigrations : IEntityTypeConfiguration<BookCategory>
+    {
+        public void Configure(EntityTypeBuilder<BookCategory> builder)
+        {
+            builder.HasKey(e => new
+            {
+                e.BookId,
+                e.CategoryId
+            });
+
+
+        }
+    }
+    public class RentalCopyConfigrations : IEntityTypeConfiguration<RentalCopy>
+    {
+        public void Configure(EntityTypeBuilder<RentalCopy> builder)
+        {
+            builder.HasKey(e => new
+            {
+                e.RentalId,
+                e.bookCopyId
+            });
+
+
+        }
+    }
+
+
+}

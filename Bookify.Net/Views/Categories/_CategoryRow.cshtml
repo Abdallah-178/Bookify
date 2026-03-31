@@ -1,0 +1,50 @@
+﻿@model CategoryViewModel
+
+<tr>
+    <td>@Model.Name</td>
+    <td>
+        <span class="badge badge-light-@(Model.IsDeleted ? "danger" : "success") js-status">
+            @(Model.IsDeleted ? "Deleted" : "Available")
+        </span>
+    </td>
+    <td>@Model.CreatedOn</td>
+    <td class="js-updated-on">@Model.LastUpdatedOn</td>
+    <td>
+        <div class="dropdown">
+            <a class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
+               href="#"
+               role="button"
+               id="dropdownMenuButton1"
+               data-bs-toggle="dropdown"
+               aria-expanded="false">
+                <span class="svg-icon svg-icon-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <rect x="5" y="5" width="5" height="5" rx="1" fill="currentColor"></rect> <rect x="14" y="5" width="5" height="5" rx="1" fill="currentColor" opacity="0.3"></rect> <rect x="5" y="14" width="5" height="5" rx="1" fill="currentColor" opacity="0.3"></rect> <rect x="14" y="14" width="5" height="5" rx="1" fill="currentColor" opacity="0.3"></rect> </g> </svg>
+                </span>
+            </a>
+
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li>
+                    <a href="javascript:;" class="dropdown-item js-render-model 
+                    js-render-modal"
+                     data-title="Edit Category" 
+                     data-url="/Categories/Edit/@Model.Id"
+                     data-update="true">
+                        <i class="bi bi-pencil-fill"></i>
+                        Edit
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item js-toggle-status"
+                       data-urltoggle="/Categories/Togglestatus/@Model.Id"
+                       href="javascript:;">
+                        <i class="bi bi-toggles"></i>
+                        Toggle Status
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </td>
+
+
+</tr>

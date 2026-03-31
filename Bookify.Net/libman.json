@@ -1,0 +1,13 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "fslightbox@3.7.4",
+      "destination": "wwwroot/lib/fslightbox/",
+      "files": [
+        "index.min.js"
+      ]
+    }
+  ]
+}

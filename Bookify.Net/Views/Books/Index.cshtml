@@ -1,0 +1,117 @@
+﻿@{
+    ViewData["Title"] = "Books";
+}
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+
+@section DataTableStyles {
+    <link href="~/assets/plugins/datatables/datatables.bundle.css" rel="stylesheet" />
+}
+
+
+
+
+<div class="alert  bg-light-primary border border-primary border-3 border-dashed d-flex justify-content-between w-100 p-5 mb-10">
+    <div class="d-flex align-items-center">
+        <div class="symbol-label fs-2 fw-semibold text-success pe-2">
+            <span class="svg-icon svg-icon-2x svg-icon-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg b-b57328l4g1="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="800px" width="800px" version="1.1" id="Capa_1" viewBox="0 0 251.83 251.83" xml:space="preserve">
+                <path b-b57328l4g1="" d="M251.83,49.834v166.107H143.855l-12.735-12.444h-10.408l-12.735,12.444H0V49.834h18.321v140.789v14.905l14.049-4.98  c23.612-8.371,46.618-12.44,70.332-12.44c4.713,0,9.725,0.188,14.895,0.559l5.352,0.385v0.427l2.967-0.214l2.967,0.214v-0.427  l5.352-0.385c5.17-0.371,10.182-0.559,14.895-0.559c23.714,0,46.72,4.069,70.332,12.44l14.049,4.98v-14.905V49.834H251.83z   M133.479,50.362v127.802c5.261-0.378,10.499-0.587,15.649-0.587c24.821,0,49.12,4.278,73.851,13.046V36.507  c-5.26-0.413-10.493-0.618-15.631-0.618C182.629,35.889,158.398,40.638,133.479,50.362z M28.851,190.623  c24.731-8.768,49.029-13.046,73.851-13.046c5.15,0,10.389,0.209,15.649,0.587V50.362c-24.92-9.725-49.15-14.474-73.869-14.474  c-5.138,0-10.371,0.205-15.631,0.618V190.623z" fill="currentColor"></path>
+                                                    </svg>
+
+            </span>
+
+        </div>
+
+        <div class="d-flex flex-column pe-0 pe-sm-10">
+            <h5 class="mb-1">Books</h5>
+
+        </div>
+
+    </div>
+    <div>
+        <a class="btn btn-sm btn-primary" asp-action="Create">
+            <i class="bi bi-plus-square-fill"></i>
+            Create New Books
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header align-items-center py-5 gap-2 gap-md-5 pb-0">
+        <div class="card-title">
+            <div class="d-flex align-items-center position-relative my-1">
+                <!-- Search Icon -->
+                <span class="position-absolute ms-4">
+                    <span class="svg-icon svg-icon-muted svg-icon-2hx">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
+                                  height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
+                                  fill="currentColor" />
+                            <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3
+                         11 3C15.4444 3 19 6.55556 19 11C19 15.4444
+                         15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333
+                         5 11C5 14.4667 7.53333 17 11 17C14.4667
+                         17 17 14.4667 17 11C17 7.53333
+                         14.4667 5 11 5Z"
+                                  fill="currentColor" />
+                        </svg>
+                    </span>
+                </span>
+
+                <!-- Search Input -->
+                <input type="text"
+                       data-kt-filter="search"
+                       class="form-control form-control-solid w-250px ps-14"
+                       placeholder="Search By Title or Author" />
+            </div>
+
+
+
+
+        </div>
+
+    </div>
+    <div class="card-body pt-0">
+
+        <div class="table-responsive">
+            <table id="Books" class="table gs-7 gx-2 align-middle">
+                <thead>
+                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom border-gray-200">
+                        <th class="d-none"></th>
+                        <th>Book</th>
+                        <th>Publisher</th>
+                        <th>Publishing Date</th>
+                        <th>Hall</th>
+                        <th>Categories</th>
+                        <th>Rental</th>
+                        <th>Status</th>
+
+                        <th class="text-end">Action</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Books Render Here *@
+                </tbody>
+            </table>
+        </div>
+
+
+
+    </div>
+
+</div>
+
+
+<input type="hidden" name="__RequestVerificationToken" value="@antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+@section plugins {
+    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
+    <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+}
+
+@section Scripts {
+    <script src="~/js/serverside_books.js" asp-append-version="true"></script>
+}
+
