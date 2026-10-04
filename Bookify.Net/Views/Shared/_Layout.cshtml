@@ -4,11 +4,11 @@
 <html lang="en">
 <!--begin::Head-->
 <head>
-    <base href="" />
+   
 
     <meta charset="utf-8" />
-    <meta name="description" content="The most advanced Bootstrap Admin Theme on Themeforest trusted by 100,000 beginners and professionals. Multi-demo, Dark Mode, RTL support and complete React, Angular, Vue, Asp.Net Core, Rails, Spring, Blazor, Django, Flask & Laravel versions. Grab your copy now and get life-time updates for free." />
-    <meta name="keywords" content="metronic, bootstrap, bootstrap 5, angular, VueJs, React, Asp.Net Core, Rails, Spring, Blazor, Django, Flask & Laravel starter kits, admin themes, web design, figma, web development, free templates, free admin themes, bootstrap theme, bootstrap template, bootstrap dashboard, bootstrap dak mode, bootstrap button, bootstrap datepicker, bootstrap timepicker, fullcalendar, datatables, flaticon" />
+    <title>@ViewData["Title"] - Bookify</title>
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
@@ -47,6 +47,7 @@
         </span>
     </div>
     <!--end:: page loader-->
+
     <!--begin::Root-->
     @if (SignInManager.IsSignedIn(User))
     {
@@ -92,6 +93,7 @@
     }
     else
     {
+        // Error 
         @RenderBody()
     }
 
@@ -112,6 +114,8 @@
     <!--begin::Javascript-->
     <script>var hostUrl = "assets/";</script>
     <!--begin::Global Javascript Bundle(mandatory for all pages)-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/assets/js/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
 

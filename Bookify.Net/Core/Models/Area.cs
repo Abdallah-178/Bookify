@@ -10,10 +10,7 @@
         public int Governorateid { get; set; }
         public Governorate? Governorate { get; set; }
 
-        internal object Select(Func<object, object> value)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 
 

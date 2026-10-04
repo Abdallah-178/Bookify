@@ -94,7 +94,7 @@
                     <!--begin::Details item-->
                     <div class="fw-bold mt-5">Date of Birth</div>
                     <div class="text-gray-600">
-                        <p class="text-gray-600 text-hover-primary">@Model.DateOfBirth</p>
+                        <p class="text-gray-600 text-hover-primary">@Model.DateOfBirth.ToString("dd MMM,yyyy")</p>
                     </div>
                     <!--begin::Details item-->
                     <!--begin::Details item-->
@@ -158,8 +158,7 @@
                                         </span>
                                         <!--end::Svg Icon-->
                                         <div class="ms-2">
-                                           @Model.Rentals.Sum(r =>r.NumberOfCopies)
-                                 
+                                            <span id="TotalCopies"> @Model.Rentals.Sum(r => r.NumberOfCopies) </span>
                                         </div>
                                     </div>
                                     <div class="fs-7 fw-normal text-muted">Total Number Of Copies</div>
@@ -245,6 +244,7 @@
                                             <th class="min-w-125px">End Date</th>
                                             <th class="min-w-150px">Status</th>
                                             <th class="min-w-125px text-end rounded-end pe-4">Add On</th>
+                                           
                                         </tr>
                                     </thead>
                                     <!--end::Table head-->
@@ -320,7 +320,7 @@
                     <!--end::Card header-->
                     <!--begin::Card body-->
                     <div class="card-body pt-0 pb-5">
-                        Rentals will be shown here
+                        Rentals will be shown Here
                     </div>
                     <!--end::Card body-->
                 </div>
@@ -344,7 +344,7 @@
                 var subscriberKey = $(this).data('key');
 
                 bootbox.confirm({
-                    message: "Are you sure that you need to renew this subscription?",
+                    message: "Are you sure that you need to Renew this subscription?",
                     buttons: {
                         confirm: {
                             label: 'Yes',
@@ -384,6 +384,51 @@
                     }
                 });
             });
+                $('.js-cancel-rental').on('click', function () {
+
+                var btn = $(this);
+
+                bootbox.confirm({
+                    message: "Are you sure that you need to Cancel this Rental?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            $.post({
+                                url: `/Rentals/MarkIsDeleted/${btn.data('id')}`,
+                                data: {
+                                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                                },
+                                success: function (result) { // result = copiescount it come from MarkIsDeleted
+                                   btn.parents('tr').remove();
+                                   if($('#RentalsTable tbody tr').length === 0 ){
+                                         $('#RentalsTable').fadeOut(function(){ //RentalsTable From _Rentals
+                                               $('#Alert').fadeIn()             //RentalsTable From _Rentals
+                                         });
+                                   
+                                   }
+                                    var totalCount = $('#TotalCopies');
+                                    var currentCount = parseInt(totalCount.text());
+                                    totalCount.text(currentCount - result);
+
+                                    showSuccessMessage();
+                                },
+                                error: function () {
+                                    showErrorMessage();
+                                }
+                            });
+                        }
+                    }
+                });
+            });
         });
     </script>
 
@@ -397,5 +442,4 @@
 }
 
 
-                                    statusBadge
-                                    CardStatus
+                                  

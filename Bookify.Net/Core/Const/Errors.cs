@@ -25,7 +25,7 @@
         public const string DenySpecialCharacters = "Special characters are not allowed.";
         public const string InvalidNationalId = "Invalid national ID.";
         public const string EmptyImage = "Please select an image.";
-
+        public const string InvalidFolderPath = "The specified folder path is invalid or not allowed.";
 
         public const string InvalidSerailNumber = "Invalid Serail Number !";
         public const string NotAvalibleForRental = "This Book /Copy Is Not Available For Rental .";

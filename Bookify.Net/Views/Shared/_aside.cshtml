@@ -17,6 +17,7 @@
                 </div>
                 <!--end:Menu item-->
                 <!--begin:Menu item-->
+            
             @if (User.IsInRole(AppRoles.Archive))
                 {
                 <div class="menu-item">
@@ -88,6 +89,7 @@
                 
              @if (User.IsInRole(AppRoles.Admin))
                 {
+
                     <div class="menu-item">
                         <!--begin:Menu link-->
                         <a asp-controller="Users" asp-action="Index" class="menu-link " target="blank" active-when="Users">
@@ -107,6 +109,7 @@
                         </a>
                         <!--end:Menu link-->
                     </div>
+                   
                 }
 
                 @if (User.IsInRole(AppRoles.Reception))

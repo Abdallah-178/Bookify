@@ -11,7 +11,5 @@
         public ICollection<BookCategory> Books { get; set; } = new List<BookCategory>();
 
 
-
-
     }
 }

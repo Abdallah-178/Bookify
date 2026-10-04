@@ -1,6 +1,8 @@
 ﻿@model CategoryFormViewModel
 
-
+@{
+    ViewData["Title"] = $"{(Model?.Id > 0 ? "Edit" : "Add")} Category";
+}
 
 <form asp-action="@(Model?.Id > 0 ? "Edit" : "Create")"
       data-ajax="true"
@@ -8,7 +10,7 @@
       data-ajax-begin="onModalBegin"
       data-ajax-success="onModalSuccess"
       data-ajax-failure="onModalfailure"
-      data-ajax-complete="showErrorComplete">
+      data-ajax-complete="onModalComplete">@* Prevent send  Multi Request IN Form by De disabl disabl Button *@
 
     @if (Model?.Id > 0)
     {

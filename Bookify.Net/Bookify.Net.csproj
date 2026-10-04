@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-Bookify.Net-3d1e81c0-cae8-4fc0-a92b-272ace0dd29e</UserSecretsId>
+    <UserSecretsId>3d1e81c0-cae8-4fc0-a92b-272ace0dd29e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\assets\abdallah\Books\thumb\" />
     <Folder Include="wwwroot\assets\images\Books\thumb\" />
     <Folder Include="wwwroot\assets\images\Subscribers\thumb\" />
   </ItemGroup>

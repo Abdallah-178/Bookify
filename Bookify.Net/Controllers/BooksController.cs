@@ -8,18 +8,16 @@ namespace Bookify.Net.Controllers
     [Authorize(Roles = AppRoles.Archive)]
     public class BooksController : Controller
     {
-
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IImageService _imageService;
 
+
         private readonly Cloudinary _cloudinary;
-        public BooksController(ApplicationDbContext context,
-            IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
+        public BooksController(ApplicationDbContext context, IMapper mapper, IOptions<CloudinarySettings> cloudinary, IImageService imageService)
         {
             _context = context;
             _mapper = mapper;
-
 
 
 
@@ -36,9 +34,8 @@ namespace Bookify.Net.Controllers
             _cloudinary = new Cloudinary(account);
             _cloudinary.Api.Secure = true;
             _imageService = imageService;
-            _imageService = imageService;
-        }
 
+        }
 
 
         public IActionResult Index()
@@ -84,8 +81,6 @@ namespace Bookify.Net.Controllers
             return Ok(jsonData);
         }
 
-
-
         public IActionResult Details(int id)
         {
             var book = _context.Books
@@ -106,14 +101,12 @@ namespace Bookify.Net.Controllers
         }
 
 
-
-
-
         [HttpGet]
         public IActionResult Create()
         {
             return View("Form", PopulateViewModel());
         }
+
 
 
         [HttpPost]
@@ -128,7 +121,7 @@ namespace Bookify.Net.Controllers
             // Begin Save File In Server //
             if (model.Image is not null)
             {
-                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}"; // Give Him Guid Name+Extenstion
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName).ToLowerInvariant()}"; // Give Him Guid Name+Extenstion
 
                 var result = await _imageService.UploadAsync(model.Image, imageName, "/assets/images/Books", hasThumbnail: true);
                 if (!result.isUploaded)
@@ -140,10 +133,10 @@ namespace Bookify.Net.Controllers
                 book.ImageUrl = imageName;
                 book.custom_img = imageName;
 
-
             }
             // End Save File In Server //
             book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             foreach (var item in model.SelectedCategories)
                 book.Categories.Add(new BookCategory { CategoryId = item });
 
@@ -194,7 +187,7 @@ namespace Bookify.Net.Controllers
                     _imageService.Delete(book.ImageUrl, book.custom_img);
 
                 }
-                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}"; // Give Him Guid Name+Extenstion
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName).ToLowerInvariant()}"; // Give Him Guid Name+Extenstion
 
                 var result = await _imageService.UploadAsync(model.Image, imageName, "/assets/images/Books", hasThumbnail: true);
                 if (!result.isUploaded)
@@ -205,8 +198,6 @@ namespace Bookify.Net.Controllers
                 }
                 model.ImageUrl = imageName;
                 model.custom_img = imageName;
-
-
             }
             else if (!string.IsNullOrEmpty(book.ImageUrl))
             {
@@ -235,39 +226,6 @@ namespace Bookify.Net.Controllers
         }
 
 
-
-
-
-
-
-
-
-
-
-
-        private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
-        {
-            BookFormViewModel viewModel = model is null ? new BookFormViewModel() : model;
-
-            var AuthorList = _context.Authors.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
-            var CategoryList = _context.Categories.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
-
-
-            viewModel.Authors = _mapper.Map<IEnumerable<SelectListItem>>(AuthorList);
-            viewModel.Categories = _mapper.Map<IEnumerable<SelectListItem>>(CategoryList);
-
-
-            return viewModel;
-        }
-
-        private string GetThumbnailUrl(string url)
-        {
-            var separator = "image/upload/";
-            var urlparts = url.Split(separator);
-            var thumbnailUrl = $"{urlparts[0]}{separator}e_cartoonify:11:0/{urlparts[1]}";
-
-            return thumbnailUrl;
-        }
         public IActionResult AllowItem(BookFormViewModel model)
         {
             var book = _context.Books.SingleOrDefault(c => c.Title == model.Title && c.AuthorId == model.AuthorId);
@@ -275,8 +233,8 @@ namespace Bookify.Net.Controllers
             var isAllawed = book is null || book.id.Equals(model.id);
 
             return Json(isAllawed);
-
         }
+
 
 
         [HttpPost]
@@ -298,8 +256,56 @@ namespace Bookify.Net.Controllers
             _context.SaveChanges();
 
 
-
             return Ok(book.LastUpdatedOn.ToString());
+        }
+
+        private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
+        {
+            BookFormViewModel viewModel = model is null ? new BookFormViewModel() : model;
+
+            var AuthorList = _context.Authors.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
+            var CategoryList = _context.Categories.Where(a => !a.IsDeleted).OrderByDescending(a => a.Name).ToList();
+
+
+            viewModel.Authors = _mapper.Map<IEnumerable<SelectListItem>>(AuthorList);
+            viewModel.Categories = _mapper.Map<IEnumerable<SelectListItem>>(CategoryList);
+
+            return viewModel;
+
+            //model ??= new BookFormViewModel();
+            //model.Authors = _context.Authors
+            //  .AsNoTracking()
+            //  .Where(a => !a.IsDeleted)
+            //  .OrderBy(a => a.Name)
+            //  .Select(a => new SelectListItem
+            //  {
+            //      Value = a.id.ToString(),
+            //      Text = a.Name
+            //  })
+            //  .ToList();
+
+            //model.Categories = _context.Categories
+            //    .AsNoTracking()
+            //    .Where(c => !c.IsDeleted)
+            //    .OrderBy(c => c.Name)
+            //    .Select(c => new SelectListItem
+            //    {
+            //        Value = c.Id.ToString(),
+            //        Text = c.Name
+            //    })
+            //    .ToList();
+
+            //return model;
+
+        }
+
+        private string GetThumbnailUrl(string url)
+        {
+            var separator = "image/upload/";
+            var urlparts = url.Split(separator);
+            var thumbnailUrl = $"{urlparts[0]}{separator}e_cartoonify:11:0/{urlparts[1]}";
+
+            return thumbnailUrl;
         }
 
 

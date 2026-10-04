@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Globalization;
 using System.Text;
-using System.Text.Encodings.Web;
 
 namespace Bookify.Net.Areas.Identity.Pages.Account.Manage
 {

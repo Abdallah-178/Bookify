@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 
@@ -30,7 +29,7 @@ namespace Bookify.Net.Services
             message.To.Add(_webHostEnvironment.IsDevelopment() ? "abdallahouf2001@gmail.com" : email);
 
 
-            SmtpClient smtpClient = new(_mailSettings.Host)
+            using SmtpClient smtpClient = new(_mailSettings.Host)
             {
                 Port = _mailSettings.Port,
                 Credentials = new NetworkCredential(_mailSettings.Email, _mailSettings.Password),
@@ -39,7 +38,7 @@ namespace Bookify.Net.Services
 
             await smtpClient.SendMailAsync(message);
 
-            smtpClient.Dispose();
+
         }
     }
 }

@@ -13,7 +13,6 @@
 
         public IEnumerable<RentalCopyViewModel> RentalCopies { get; set; } = new List<RentalCopyViewModel>();
 
-
         public int TotalDelayInDays
         {
             get

@@ -2,6 +2,8 @@
 {
     public class BookCategory
     {
+
+        //Many to Many
         public int BookId { get; set; }
         public Book? Book { get; set; }
 

@@ -1,6 +1,4 @@
-﻿
-
-namespace Bookify.Net.Controllers
+﻿namespace Bookify.Net.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
     public class CategoriesController : Controller
@@ -40,11 +38,14 @@ namespace Bookify.Net.Controllers
                 return BadRequest();
 
             var category = _mapper.Map<Category>(model);
+
             category.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             _context.Categories.Add(category);
             _context.SaveChanges();
 
             var viewmodel = _mapper.Map<CategoryViewModel>(category);
+
             return PartialView("_CategoryRow", viewmodel);
 
         }
@@ -81,10 +82,12 @@ namespace Bookify.Net.Controllers
             category.LastUpdatedOn = DateTime.Now;
             category.LastUpdateedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
+
+
             _context.SaveChanges();
 
 
-
+            _context.SaveChanges();
             var viewmodel = _mapper.Map<CategoryViewModel>(category);
 
 
@@ -116,7 +119,7 @@ namespace Bookify.Net.Controllers
         }
 
 
-        public IActionResult AllowItem(CategoryFormViewModel model)
+        public async Task<IActionResult> AllowItem(CategoryFormViewModel model)
         {
             var category = _context.Categories.SingleOrDefault(c => c.Name == model.Name);
             var isAllawed = category is null || category.Id.Equals(model.Id);

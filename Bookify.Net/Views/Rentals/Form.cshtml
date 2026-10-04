@@ -1,7 +1,8 @@
 ﻿@model RentalFormViewModel
 
 @{
-    ViewData["Title"] = "Create Rental";
+    var title = Model.CurrentCopies.Any() ? "Edit" : "Add";
+    ViewData["Title"] = $"{title} Rental";
 }
 
 <!--begin::Card-->
@@ -11,7 +12,7 @@
     </div>
     <!--begin::Card body-->
     <div class="card-body">
-        <partial name="_Search" model="new SearchFormViewModel()" />
+        <partial name="_Search" model="new SearchFormViewModel()" />    <!--Form 1 for Search-->
     </div>
     <!--end::Card body-->
     <!--end::Card body-->
@@ -20,22 +21,29 @@
         <div class="card-header border-0 pt-5">
             <h3 class="card-title align-items-start flex-column">
                 <span class="card-label fw-bold text-dark">Books</span>
-                <span class="text-muted mt-1 fw-semibold fs-7">You can add up to @Model.MaxAlowedCopies books</span>
+                <span class="text-muted mt-1 fw-semibold fs-7">You can add up to @Model.MaxAlowedCopies book(s)</span>
             </h3>
         </div>
         <!--end::Header-->
         <!--begin::Body-->
-        <div class="card-body pt-5">
-            <form asp-action="Create" id="CopiesForm">
+        <div class="card-body pt-5">                                    <!--Form 2 for Search-->
+            @* CopiesForm for js *@                                          
+            <form asp-controller="Rentals" id="CopiesForm">
+                <!--CopiesForm for js-->
                 <input type="hidden" asp-for="SubsecriberKey" />
                 @* Copies will be added here *@
+
+                @foreach (var Copy in Model.CurrentCopies)
+                 {
+                    <partial name="_CopyDetails" model="Copy" />
+                  }
+
                 <button type="submit" class="btn btn-primary d-none">
                     <span class="indicator-label">
                         Save
                     </span>
                     <span class="indicator-progress">
-                        Please wait...
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                     </span>
                 </button>
             </form>
@@ -43,13 +51,17 @@
         <!--end::Body-->
     </div>
     <!--end::Card-->
-@section Scripts
-{
+
+
+
+
+@section Scripts {
         <partial name="_ValidationScriptsPartial" />
-
-
+  
         <script>
             var maxallowedcopies = @Model.MaxAlowedCopies
         </script>
         <script src="~/js/rental.js" asp-append-version="true"></script>
 }
+
+    

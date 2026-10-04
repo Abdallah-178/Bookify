@@ -121,7 +121,7 @@
         }
 
 
-        public IActionResult AllowItem(CategoryFormViewModel model)
+        public async Task<IActionResult> AllowItem(CategoryFormViewModel model)
         {
             var Authors = _context.Authors.SingleOrDefault(c => c.Name == model.Name);
             var isAllawed = Authors is null || Authors.id.Equals(model.Id);

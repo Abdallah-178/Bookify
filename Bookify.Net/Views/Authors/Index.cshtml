@@ -32,84 +32,7 @@
 </div>
 
 <div class="card shadow-sm">
-    <div class="card-header align-items-center py-5 gap-2 gap-md-5 pb-0">
-        <div class="card-title">
-            <div class="d-flex align-items-center position-relative my-1">
-                <!-- Search Icon -->
-                <span class="position-absolute ms-4">
-                    <span class="svg-icon svg-icon-muted svg-icon-2hx">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546"
-                                  height="2" rx="1" transform="rotate(45 17.0365 15.1223)"
-                                  fill="currentColor" />
-                            <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3
-                         11 3C15.4444 3 19 6.55556 19 11C19 15.4444
-                         15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333
-                         5 11C5 14.4667 7.53333 17 11 17C14.4667
-                         17 17 14.4667 17 11C17 7.53333
-                         14.4667 5 11 5Z"
-                                  fill="currentColor" />
-                        </svg>
-                    </span>
-                </span>
-
-                <!-- Search Input -->
-                <input type="text"
-                       data-kt-filter="search"
-                       class="form-control form-control-solid w-250px ps-14"
-                       placeholder="Search Report" />
-            </div>
-
-
-            <div id="kt_datatable_example_1_export" class="d-none"></div>
-
-        </div>
-        <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
-
-            <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                <span class="svg-icon svg-icon-muted svg-icon-2hx">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path opacity="0.3" d="M10 4H21C21.6 4 22 4.4 22 5V7H10V4Z" fill="currentColor" />
-                        <path opacity="0.3" d="M13 14.4V9C13 8.4 12.6 8 12 8C11.4 8 11 8.4 11 9V14.4H13Z" fill="currentColor" />
-                        <path d="M10.4 3.60001L12 6H21C21.6 6 22 6.4 22 7V19C22 19.6 21.6 20 21 20H3C2.4 20 2 19.6 2 19V4C2 3.4 2.4 3 3 3H9.20001C9.70001 3 10.2 3.20001 10.4 3.60001ZM13 14.4V9C13 8.4 12.6 8 12 8C11.4 8 11 8.4 11 9V14.4H8L11.3 17.7C11.7 18.1 12.3 18.1 12.7 17.7L16 14.4H13Z" fill="currentColor" />
-                    </svg>
-                </span>
-                Export
-            </button>
-
-            <div id="kt_datatable_example_export_menu" class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4" data-kt-menu="true">
-
-                <div class="menu-item px-3">
-                    <a href="#" class="menu-link px-3" data-kt-export="copy">
-                        Copy to clipboard
-                    </a>
-                </div>
-
-                <div class="menu-item px-3">
-                    <a href="#" class="menu-link px-3" data-kt-export="excel">
-                        Export as Excel
-                    </a>
-                </div>
-
-                <div class="menu-item px-3">
-                    <a href="#" class="menu-link px-3" data-kt-export="csv">
-                        Export as CSV
-                    </a>
-                </div>
-
-                <div class="menu-item px-3">
-                    <a href="#" class="menu-link px-3" data-kt-export="pdf">
-                        Export as PDF
-                    </a>
-                </div>
-
-            </div>
-
-            <div id="kt_datatable_example_buttons" class="d-none"></div>
-
-        </div>
-    </div>
+    <partial name="_DataTableCardHeader" />
     <div class="card-body pt-0">
 
         <div class="table-responsive">
@@ -150,8 +73,9 @@
 }
 
 @section plugins {
-    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
+   
     <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+    <script src="~/assets/plugins/datatables/vfs_fonts.js"></script>
 }
 
 

@@ -1,10 +1,4 @@
-﻿using Bookify.Net.Helpers;
-using Hangfire;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using System.Text.Encodings.Web;
-using WhatsAppCloudApi;
-using WhatsAppCloudApi.Services;
+﻿
 
 namespace Bookify.Net.Controllers
 {
@@ -38,6 +32,7 @@ namespace Bookify.Net.Controllers
 
         public async Task<IActionResult> Index()
         {
+
             return View();
         }
 
@@ -133,7 +128,7 @@ namespace Bookify.Net.Controllers
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            BackgroundJob.Enqueue(() => 
+            BackgroundJob.Enqueue(() =>
             _emailSender.SendEmailAsync(
                 model.Email!,
                 "Welcom To Bookify",
@@ -179,7 +174,7 @@ namespace Bookify.Net.Controllers
                         components
                     ));
 
-                   
+
 
                 }
 
@@ -318,11 +313,13 @@ namespace Bookify.Net.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RenewSubscriptionAsync(int sKey)
+        public async Task<IActionResult> RenewSubscription(string sKey)
         {
+
+            var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
             var subscriber = _context.Subsecribers
                                         .Include(s => s.Subscriptions)
-                                        .SingleOrDefault(s => s.Id == sKey);
+                                        .SingleOrDefault(s => s.Id == subscriberId);
 
             if (subscriber is null)
                 return NotFound();
@@ -341,81 +338,94 @@ namespace Bookify.Net.Controllers
                 CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
                 CreatedOn = DateTime.Now,
                 StartDate = startDate,
-                EndDate = startDate.AddYears(1)
+                EndDate = startDate.AddYears(1) // +1
             };
 
             subscriber.Subscriptions.Add(newSubscription);
 
             _context.SaveChanges();
 
+
+            //////////////////////////////////////////////////////
+            ///
             //Send email and WhatsApp Message
-
-
             var placeholders = new Dictionary<string, string>()
                     {
                      { "imageUrl", "https://res.cloudinary.com/devcreed/image/upload/v1668739431/icon-positive-vote-2_jcxdww.svg" },
                      { "header", $"Hello {subscriber.FirstName}," },
-                     { "body", $"Your Subsecription has been Renewed through {newSubscription.EndDate.ToString()}" },
+                     { "body", $"Your Subsecription has been Renewed through {newSubscription.EndDate.ToString("d MMM, yyyy")}🎉🎉" },
                     };
 
             var body = _emailBodyBuilder.GetEmailBody(EmailTemplates.Notification, placeholders);
 
-            BackgroundJob.Enqueue(() =>
-            _emailSender.SendEmailAsync(
-                subscriber.Email,
-                "Bookify Subsecription Renewel", body));
+
+            //BackgroundJob.Enqueue(() =>
+            //_emailSender.SendEmailAsync(
+            //    subscriber.Email,
+            //    "Bookify Subsecription Renewel", body));
+
+
+            //BackgroundJob.Schedule(() =>
+            //_emailSender.SendEmailAsync(
+            //    subscriber.Email,
+            //    "Bookify Subsecription Renewel", body), TimeSpan.FromHours(1));
 
             // End Send Wellcome Email
 
-            if (subscriber.HasWhatsApp)
-            {
-                var components = new List<WhatsAppComponent>
-                {
-                    new WhatsAppComponent
-                            {
-                                Type = "body",
-                                Parameters = new List<object>
-                                {
-                                    new WhatsAppTextParameter { Text = subscriber.FirstName }
-                                }
-                            }
-                };
+            // Begin Send Whatsapp
+            //if (subscriber.HasWhatsApp)
+            //{
+            //    var components = new List<WhatsAppComponent>
+            //    {
+            //        new WhatsAppComponent
+            //                {
+            //                    Type = "body",
+            //                    Parameters = new List<object>
+            //                    {
+            //                        new WhatsAppTextParameter { Text = subscriber.FirstName }
+            //                    }
+            //                }
+            //    };
 
-                var numbers = PhoneHelper.ToInternationalPalestine(subscriber.MobileNumber);
+            //    var numbers = PhoneHelper.ToInternationalPalestine(subscriber.MobileNumber);
 
-                var result = await _whatsAppClient.SendMessage(
-                    numbers.Primary,
-                    WhatsAppLanguageCode.English,
-                   WhatsappTemplates.WelcomeMessage,
-                    components
-                );
+            //    var result = await _whatsAppClient.SendMessage(
+            //        numbers.Primary,
+            //        WhatsAppLanguageCode.English,
+            //        WhatsappTemplates.SubscriperRenew,
+            //        components
+            //    );
 
-                bool success = result?.Error == null && (result?.Messages?.Any() ?? false);
+            //    bool success = result?.Error == null && (result?.Messages?.Any() ?? false);
 
-                if (!success)
-                {
-                    BackgroundJob.Enqueue(() =>
+            //    if (!success)
+            //    {
+            //        BackgroundJob.Enqueue(() =>
 
-                       _whatsAppClient.SendMessage(
-                        numbers.Fallback,
-                        WhatsAppLanguageCode.English,
-                        WhatsappTemplates.WelcomeMessage,
-                        components
-                    ));
+            //           _whatsAppClient.SendMessage(
+            //            numbers.Fallback,
+            //            WhatsAppLanguageCode.English,
+            //            WhatsappTemplates.WelcomeMessage,
+            //            components
+            //        ));
 
 
 
-                }
+            //    }
 
-            }
-
+            //}
             // End Send Whatsapp
-
+            //////////////////////////////////////////////////////
 
             var viewModel = _mapper.Map<SubscriptionViewModel>(newSubscription);
 
             return PartialView("_SubscriptionRow", viewModel);
         }
+
+
+
+
+
 
         private SubscriberFormViewModel PopulateViewModel(SubscriberFormViewModel? model = null)
         {
@@ -430,7 +440,7 @@ namespace Bookify.Net.Controllers
             return viewModel;
         }
 
-        public IActionResult AllowItemEmail(SubscriberFormViewModel model)
+        public async Task<IActionResult> AllowItemEmail(SubscriberFormViewModel model)
         {
             var Subscriberid = 0;
 
@@ -443,7 +453,7 @@ namespace Bookify.Net.Controllers
             return Json(isAllawed);
 
         }
-        public IActionResult AllowItemNationalId(SubscriberFormViewModel model)
+        public async Task<IActionResult> AllowItemNationalId(SubscriberFormViewModel model)
         {
 
             var Subscriberid = 0;
@@ -457,7 +467,7 @@ namespace Bookify.Net.Controllers
             return Json(isAllawed);
 
         }
-        public IActionResult AllowItemMobileNumber(SubscriberFormViewModel model)
+        public async Task<IActionResult> AllowItemMobileNumber(SubscriberFormViewModel model)
         {
 
             var Subscriberid = 0;

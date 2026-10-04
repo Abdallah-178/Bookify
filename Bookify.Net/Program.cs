@@ -1,11 +1,10 @@
-using Bookify.Net.Core.Mappeing;
-using Bookify.Net.Helpers;
+﻿using Bookify.Net.Core.Mappeing;
+
 using Bookify.Net.Seeds;
-using Hangfire;
+using Bookify.Net.Tasks;
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using WhatsAppCloudApi.Extensions;
@@ -48,17 +47,19 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 
 
-
-
-
-
 });
 
-builder.Services.AddTransient<IImageService, ImageService>();
+
 
 
 
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
+builder.Services.Configure<AuthorizationOptions>(option => option.AddPolicy("AdminsOnly", policy =>   // انو محدش يقدر يصل الا لما يكون عامل policy عملنا 
+{
+    policy.RequireAuthenticatedUser(); //يكون دخل AuthenticatedUser 
+    policy.RequireRole(AppRoles.Admin);//admin Role ان يكون معاه 
+}));
+
 
 ////////////////////////////////////////////////
 ///                 For Cookie
@@ -95,11 +96,12 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IEmailBodyBuilder, EmailBodyBuilder>();
 
+builder.Services.AddScoped<IImageService, ImageService>();
 
 
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
-
+//////////////////////*******//////////////*******////////////************///////////////////*******///////////////////
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -114,9 +116,8 @@ else
     app.UseHsts();
 }
 
-
-app.UseHangfireDashboard("/hangfire");
 app.UseHttpsRedirection();
+app.UseStaticFiles(); //لخدمة الصور المرفوعة وقت التشغيل 
 app.UseRouting();
 ////////////////////////////////////////////////
 
@@ -131,7 +132,6 @@ var RoleManager = Scope.ServiceProvider.GetRequiredService<RoleManager<IdentityR
 var UserManager = Scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
 await DefaultRoles.SeedRolesAsync(RoleManager);
-
 await DefaultUsers.SeedAdminUserAsync(UserManager);
 
 ////////////////////////////////////////////////
@@ -141,6 +141,28 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+
+//hangfire
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Bookify Dashboard",
+    //IsReadOnlyFunc = (DashboardContext context) => true,
+    Authorization = new IDashboardAuthorizationFilter[]
+    {
+        new HangfireAuthorizationFilter("AdminsOnly")
+    }
+});
+
+RecurringJob.AddOrUpdate<HangfireTasks>(
+    "subscription-expiration-alert",        // Job ID
+    job => job.PrepareExpirationAlert(),
+    "0 14 * * *"                            // Cron - كل يوم 2:00 PM
+);
+
+
+
+
 
 app.MapRazorPages()
    .WithStaticAssets();

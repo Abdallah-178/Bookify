@@ -24,24 +24,27 @@ namespace Bookify.Net.Data
 
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
 
-            modelBuilder.HasSequence<int>("SerialNumber", schema: "shared")  // Create Sequance In DataBase
+            builder.HasSequence<int>("SerialNumber", schema: "shared")  // Create Sequance In DataBase
                     .StartsAt(1000001);
 
-            var cascadeFks = modelBuilder.Model.GetEntityTypes()
+            // for any query on Rental or RentalCopy, automatically filter out deleted records
+            builder.Entity<Rental>().HasQueryFilter(e => !e.IsDeleted);
+            builder.Entity<RentalCopy>().HasQueryFilter(e => !e.Rental.IsDeleted);
+
+            var cascadeFks = builder.Model.GetEntityTypes()
                 .SelectMany(m => m.GetForeignKeys())
                 .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade && !fk.IsOwnership);
-
             foreach (var fk in cascadeFks)
             {
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
             }
 
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
 

@@ -1,74 +1,95 @@
 ﻿var updatedRow;
+var isSubmitting = false;
+
+var datatable, table; 
+
+$.ajaxSetup({
+    timeout: 15000
+});
 
 
-function showSuccessMessage(message = 'Saved Successfully !') {
+function showSuccessMessage() {
     Swal.fire({
         icon: "success",
         title: "Changed Successfuly",
-        text: message,
+        text: "Saved Successfully !",
         confirmButtonText: "Ok",
         customClass: {
             confirmButton: "btn btn-primary"
         }
-
-
     });
-
 }
 
-function showErrorMessage(message = 'Something went wrong!') {
-    console.log(message);
+function showErrorMessage(xhr) {
+    var message = 'Something went wrong!';
+
+    if (xhr?.statusText === 'timeout' || xhr?.status === 0) {
+        message = 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
 
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: message.responseText !== undefined ? message.responseText : message,
+        text: message,
         customClass: {
             confirmButton: "btn btn-primary"
         }
     });
-
 }
 
 
-
-
-function disaablesubmitButton(btn)
-{
-    $(btn).attr('disabled', 'disabled').attr('data-kt-indicator','on');
+function disaablesubmitButton(btn) {
+    $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
 
 }
+
+                // before request go to the Server
 function onModalBegin() {
+
+    if (isSubmitting) {
+        return false; // يمنع الـ Ajax من الإرسال أصلاً
+    }
+    isSubmitting = true;
     disaablesubmitButton($('#Modal').find(':submit'));
-   
 }
+
 function onModalSuccess(row) {
     showSuccessMessage();
 
     $('#Modal').modal('hide');
 
-       // Create And Update Datatable 
+                // Create And Update Datatable 
     if (updatedRow !== undefined) {
         datatable.row(updatedRow).remove().draw();
         updatedRow = undefined;
-    } 
+    }
     var newRow = $(row);
-    datatable.row.add(newRow).draw();
+    datatable.row.add(newRow).draw(); // When we use  DataTable Just
 
-} // For DataTable Just
-
-
-function onModalfailure(message) {
-    showErrorMessage(message);
+    //(Rerendering)Last Drop Down List When Use Just Mitronic
+    KTMenu.init();
+    KTMenu.initHandlers();
 }
-function onModalComplete() {
 
-    $('body :submit').removeAttr('disabled');
+
+function onModalfailure(xhr) {
+    showErrorMessage(xhr);
+
+    if (xhr?.responseJSON?.errors) {
+        $.each(xhr.responseJSON.errors, function (field, messages) {
+            $('#Modal').find('[data-valmsg-for="' + field + '"]').text(messages[0]);
+            $('#Modal').find('[name="' + field + '"]').addClass('input-validation-error');
+        });
+    }
+}
+
+function onModalComplete() {
+    isSubmitting = false;
+    $('body :submit').removeAttr('disabled').attr('data-kt-indicator', 'off');
 }
 
 // Select 2
-function applaySelect2()
-{
+function applaySelect2() {
     $('.js-select2').select2();
     $('.js-select2').on('select2:select', function (e) {
         var select = $(this);
@@ -76,14 +97,9 @@ function applaySelect2()
     });
 }
 
-
-
 //Begin Handel DataTable
 
-
-
 var KTDatatablesExample = function () {
-  
 
     // Private functions
     var initDatatable = function () {
@@ -92,10 +108,8 @@ var KTDatatablesExample = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
             "info": false,
-            'order': [],
             'pageLength': 10,
-            'drawCallback': function ()
-            {
+            'drawCallback': function () {
                 KTMenu.createInstances();
             }
         });
@@ -103,7 +117,7 @@ var KTDatatablesExample = function () {
 
     // Hook export buttons
     var exportButtons = () => {
-        const documentTitle = $('.js-DatataTable').data('document-title');
+        const documentTitle = $('.js-DatataTable').data('document-title');  // title for Document when you export
         var buttons = new $.fn.dataTable.Buttons(table, {
             buttons: [
                 {
@@ -154,17 +168,22 @@ var KTDatatablesExample = function () {
     }
 
     // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
+    var searchTimeout;
+
     var handleSearchDatatable = () => {
         const filterSearch = document.querySelector('[data-kt-filter="search"]');
         filterSearch.addEventListener('keyup', function (e) {
-            datatable.search(e.target.value).draw();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function () {
+                datatable.search(e.target.value).draw();
+            }, 1000);
         });
     }
 
     // Public methods
     return {
         init: function () {
-            table = document.querySelector('.js-DatataTable');
+            table = document.querySelector('.js-DatataTable'); // Datatable Name selecttor
 
             if (!table) {
                 return;
@@ -176,8 +195,8 @@ var KTDatatablesExample = function () {
         }
     };
 }();
-// End Handel Datatable 
 
+// End Handel Datatable
 
 
 $(document).ready(function () {
@@ -195,12 +214,12 @@ $(document).ready(function () {
 
         }
         var isvalid = $(this).valid();
-        if (isvalid) 
-        disaablesubmitButton($(this).find(':submit'));
+        if (isvalid)
+            disaablesubmitButton($(this).find(':submit'));
     });
 
     // Handel Description TinyMcE
-    if ($('.js-tinymce').length > 0 ) {
+    if ($('.js-tinymce').length > 0) {
         var options = {
             selector: ".js-tinymce",
             height: "480",
@@ -210,6 +229,9 @@ $(document).ready(function () {
                 "bullist numlist | outdent indent | blockquote subscript superscript | advlist | autolink | lists charmap | print preview |  code"],
             plugins: "advlist autolink link image lists charmap print preview code"
         };
+
+
+
 
         if (KTThemeMode.getMode() === "dark") {
             options["skin"] = "oxide-dark";
@@ -222,46 +244,47 @@ $(document).ready(function () {
 
 
     // Handel DatePicker
-
     $(".js-datepicker").daterangepicker({
         singleDatePicker: true,
         autoApply: true,
         drops: 'up',
-      //  maxDate:new Date()
-        
+        //  maxDate:new Date()
+
     });
 
     //Handel Select 2
     applaySelect2();
-  
+
     // Handel Modal Page
 
-    $('body').delegate('.js-render-modal', 'click', function () {
+    $('body').delegate('.js-render-modal', 'click', function () {  // Use delegate to get ajax setting
 
         var btn = $(this);
         var modal = $('#Modal');
 
-        modal.find('.modal-title').text(btn.data('title'));
+        modal.find('.modal-title').text(btn.data('title')); // Render Title
+
         if (btn.data('update') !== undefined) { // For Update Row
             updatedRow = btn.parents('tr');
         }
 
-        // brgin Ajax
+        // Begin Ajax
         $.ajax({
             url: btn.data('url'),
             type: 'GET',
 
             success: function (form) {
                 modal.find('.modal-body').html(form);
-                $.validator.unobtrusive.parse(modal);
+                $.validator.unobtrusive.parse(modal);  // after call Modal Apply Validation
 
-                
-                applaySelect2();
+                applaySelect2(); // IF Using Select 2
 
             },
 
-            error: function (xhr, status, error) {
-                console.log(error);
+            error: function (error) {
+                showErrorMessage();
+            }, complete: function () {
+                btn.data('loading', false); // يرجع يسمح بالضغط تاني
             }
         });
 
@@ -274,11 +297,12 @@ $(document).ready(function () {
         modal.modal('show');
 
     });
-
+  
     // Handle Toggle Status
     $('body').delegate('.js-toggle-status', 'click', function () {
 
         var btn = $(this);
+        if (btn.data('processing')) return;
         var message = $('#Message').text();
 
         bootbox.confirm({
@@ -296,7 +320,7 @@ $(document).ready(function () {
             callback: function (result) {
 
                 if (result) {
-
+                    btn.data('processing', true); // <== ناقص، لازم تضيفه
                     $.ajax({
                         url: btn.data('urltoggle'),
                         type: 'POST',
@@ -315,21 +339,24 @@ $(document).ready(function () {
                                     .text('Available')
                                     .removeClass('badge-light-danger')
                                     .addClass('badge-light-success');
-                               
+
                             } else {
                                 status
                                     .text('Deleted')
                                     .removeClass('badge-light-success')
                                     .addClass('badge-light-danger');
-                             
+
 
                             }
 
                             row.find('.js-updated-on').html(LastUpdatedOn);
                             showSuccessMessage();
                         },
-                        error: function (errer) {
-                            showErrorMessage(error);
+                        error: function () {
+                            showErrorMessage();
+                        },
+                        complete: function () {
+                            btn.data('processing', false);
                         }
                     });
 
@@ -339,8 +366,8 @@ $(document).ready(function () {
 
     });
 
-    // Handel DataTable
 
+    // Handel DataTable
     KTUtil.onDOMContentLoaded(function () {
         KTDatatablesExample.init();
     });
@@ -352,49 +379,5 @@ $(document).ready(function () {
     });
 
     // Handel Confirm
-  
-    $('body').delegate('.js-confirm', 'click', function () {
-        var btn = $(this);
 
-        bootbox.confirm({
-            message: btn.data('message'),
-            buttons: {
-                confirm: {
-                    label: 'Yes',
-                    className: 'btn-success'
-                },
-                cancel: {
-                    label: 'No',
-                    className: 'btn-secondary'
-                }
-            },
-            callback: function (result) {
-                if (result) {
-                    $.post({
-                        url: btn.data('url'),
-                        data: {
-                            '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                        },
-                        success: function () {
-                            showSuccessMessage();
-                        },
-                        error: function () {
-                            showErrorMessage();
-                        }
-                    });
-                }
-            }
-        });
-    });
-
-
-
-})
-
-
-
-
-
-
-
-
+});

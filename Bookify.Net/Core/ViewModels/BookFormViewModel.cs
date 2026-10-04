@@ -1,7 +1,4 @@
 ﻿
-
-
-
 namespace Bookify.Net.Core.ViewModels
 {
     public class BookFormViewModel
