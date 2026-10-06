@@ -1,4 +1,5 @@
-﻿using CloudinaryDotNet;
+﻿using AutoMapper.QueryableExtensions;
+using CloudinaryDotNet;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Linq.Dynamic.Core;
@@ -19,16 +20,12 @@ namespace Bookify.Net.Controllers
             _context = context;
             _mapper = mapper;
 
-
-
             Account account = new()
             {
 
                 Cloud = cloudinary.Value.Cloud,
                 ApiKey = cloudinary.Value.ApiKey,
                 ApiSecret = cloudinary.Value.ApiSecret,
-
-
             };
 
             _cloudinary = new Cloudinary(account);
@@ -43,43 +40,64 @@ namespace Bookify.Net.Controllers
             return View();
         }
 
+
+
         [AjaxOnly]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult GetBooks()
+        public async Task<IActionResult> GetBooks()
         {
-            var skip = int.Parse(Request.Form["start"]);
-            var pageSize = int.Parse(Request.Form["length"]);
+            var draw = int.TryParse(Request.Form["draw"], out var d) ? d : 0;
+            var skip = int.TryParse(Request.Form["start"], out var s) && s >= 0 ? s : 0;
+            var pageSize = int.TryParse(Request.Form["length"], out var l) && l > 0 ? Math.Min(l, 100) : 10;
+            var searchValue = Request.Form["search[value]"].ToString();
 
+            var sortColumnIndex = Request.Form["order[0][column]"].ToString();
+            var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"].ToString();
+            var sortDirection = Request.Form["order[0][dir]"].ToString() == "asc" ? "asc" : "desc";
 
-            var SearchValue = Request.Form["search[value]"];
+            var sortableColumns = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Id"] = "Id",
+                ["Title"] = "Title",
+                ["publisher"] = "Publisher",
+                ["PublishingDate"] = "PublishingDate",
+                ["hall"] = "Hall",
+                ["IsAvilableForRentel"] = "IsAvilableForRentel",
+                ["isDeleted"] = "IsDeleted"
+            };
 
+            var orderBy = sortableColumns.TryGetValue(sortColumn, out var column) ? column : "Id";
 
+            // Stable ordering: always tie-break by Id so paging is deterministic
+            var orderExpression = orderBy.Equals("Id", StringComparison.OrdinalIgnoreCase)
+                ? $"Id {sortDirection}"
+                : $"{orderBy} {sortDirection}, Id {sortDirection}";
 
-            var sortColumnIndex = Request.Form["order[0][column]"];
-            var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
-            var sortColumnDirection = Request.Form["order[0][dir]"];
+            IQueryable<Book> books = _context.Books.AsNoTracking();
 
+            if (!string.IsNullOrWhiteSpace(searchValue))
+            {
+                books = books.Where(b =>
+                    b.Title.Contains(searchValue) ||
+                    b.Author!.Name.Contains(searchValue) ||
+                    b.Categories.Any(c => c.Category!.Name.Contains(searchValue)));
+            }
 
+            var recordsTotal = await _context.Books.CountAsync();
+            var recordsFiltered = await books.CountAsync();
 
-            IQueryable<Book> books = _context.Books.Include(a => a.Author).Include(c => c.Categories)
-                                                                         .ThenInclude(c => c.Category);
+            var data = await books
+                .OrderBy(orderExpression)
+                .Skip(skip)
+                .Take(pageSize)
+                .ProjectTo<BookViewModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
 
-            if (!string.IsNullOrEmpty(SearchValue))
-                books = books.Where(b => b.Title.Contains(SearchValue) || b.Author!.Name.Contains(SearchValue));
-
-            books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
-
-            var data = books.Skip(skip).Take(pageSize).ToList();
-
-            var mappedDate = _mapper.Map<IEnumerable<BookViewModel>>(data);
-
-            var recordsTotal = books.Count();
-
-            var jsonData = new { recordsFiltered = recordsTotal, recordsTotal, data = mappedDate };
-
-            return Ok(jsonData);
+            return Ok(new { draw, recordsTotal, recordsFiltered, data });
         }
+
+
 
         public IActionResult Details(int id)
         {
@@ -88,8 +106,6 @@ namespace Bookify.Net.Controllers
                 .Include(c => c.Copies)
                 .Include(b => b.Categories)
                 .ThenInclude(c => c.Category)
-
-
                 .SingleOrDefault(b => b.id == id);
 
             if (book is null)

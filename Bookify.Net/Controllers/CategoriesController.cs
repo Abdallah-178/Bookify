@@ -12,16 +12,13 @@
             _context = context;
             _mapper = mapper;
         }
-
         public IActionResult Index()
         {
-
             var category = _context.Categories.AsNoTracking().ToList();
-
             var viewmodel = _mapper.Map<IEnumerable<CategoryViewModel>>(category);
-
             return View(viewmodel);
         }
+
 
         [HttpGet]
         [AjaxOnly]
@@ -94,14 +91,10 @@
             return PartialView("_CategoryRow", viewmodel);
         }
 
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Togglestatus(int id)
         {
-
-
             var category = _context.Categories.Find(id);
 
             if (category is null)
@@ -125,7 +118,6 @@
             var isAllawed = category is null || category.Id.Equals(model.Id);
 
             return Json(isAllawed);
-
         }
 
 

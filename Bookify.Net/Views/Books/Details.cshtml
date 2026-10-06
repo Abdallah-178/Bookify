@@ -5,21 +5,20 @@
 }
 
 
-
 <div class="content flex-column-fluid" id="kt_content">
     <!--begin::Navbar-->
     <div class="card mb-9">
-        <div class="card-body pt-9 pb-0">
+                   <div class="card-body pt-9 pb-0">
             <!--begin::Details-->
-            <div class="d-flex flex-wrap flex-sm-nowrap mb-6">
+                      <div class="d-flex flex-wrap flex-sm-nowrap mb-6">
                 <!--begin::Image-->
-                <div class="d-flex flex-center flex-shrink-0 bg-light rounded w-100px h-100px w-lg-150px h-lg-150px me-7 mb-4">
+                       <div class="d-flex flex-center flex-shrink-0 bg-light rounded w-100px h-100px w-lg-150px h-lg-150px me-7 mb-4">
                     <a data-fslightbox href="~/assets/images/Books/@(Model.ImageUrl is null ? "no_img_Avaliable.jpg" : Model.ImageUrl)">
                         <img class="mw-50px mw-lg-75px" src="~/assets/images/Books/@(Model.ImageUrl is null ? "no_img_Avaliable.jpg" : Model.custom_img)" alt="book img" />
                     </a>
-                </div>
+                          </div>
                 <!--end::Image-->
-                <!--begin::Wrapper-->
+                            <!--begin::Wrapper-->
                 <div class="flex-grow-1">
                     <!--begin::Head-->
                     <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
@@ -157,12 +156,13 @@
             <!--begin::Card header-->
             <div class="card-header">
                 <!--begin::Card title-->
-                <div class="card-title fs-3 fw-bold">@Html.Raw(@Model.Description)</div>
+                <div class="card-title fs-3 fw-bold"> Description </div>
                 <!--end::Card title-->
 
             </div>
             <!--end::Card header-->
             <div class="card-body">
+                <div class="card-title fs-3 fw-bold">@Html.Raw(@Model.Description)</div>
             </div>
         </div>
         <!--end::Card-->
@@ -186,9 +186,9 @@
             </div>
             <!--end::Card header-->
             <div class="card-body">
-              
 
-                 <div class="@(Model.Copies.Any() ? "d-none" : "") alert alert-warning d-flex align-items-center p-5 mb-10 js-alert">
+
+                <div class="@(Model.Copies.Any() ? "d-none" : "") alert alert-warning d-flex align-items-center p-5 mb-10 js-alert">
                     <span class="svg-icon svg-icon-warning svg-icon-2hx me-4 mb-5">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect opacity="0.3" x="2" y="2" width="20" height="20" rx="10" fill="currentColor" />
@@ -200,9 +200,7 @@
                         <h4 class="mb-1 text-warning">This is an alert</h4>
                         <span>No Copies ! </span>
                     </div>
-                </div> 
-
-
+                </div>
 
                 <table class="@(Model.Copies.Any() ? "" : "d-none") table table-row-dashed table-row-gray-300 gy-2 align-middle">
                     <thead>
@@ -219,9 +217,7 @@
                     <tbody>
                         @foreach (var copy in Model.Copies)
                         {
-
-                          <partial name="_BookCopyRow" model="@copy" />
-
+                            <partial name="_BookCopyRow" model="@copy" />
                         }
                     </tbody>
                 </table>
@@ -234,12 +230,9 @@
 
 
 
-
 @section plugins {
     <script src="~/assets/plugins/fslightbox/fslightbox.bundle.js"></script>
 }
-
-
 
 
 @section Scripts {
@@ -274,4 +267,4 @@
          KTMenu.createInstances();
         }
     </script>
-} 
+}

@@ -16,10 +16,8 @@ namespace Bookify.Net.Core.ViewModels
         public int AuthorId { get; set; }
         public IEnumerable<SelectListItem>? Authors { get; set; }
 
-
         [MaxLength(100, ErrorMessage = Errors.MaxLength)]
         public string Publisher { get; set; } = null!;
-
 
         [AssertThat("PublishingDate <= Today()", ErrorMessage = Errors.NotAllowedFutureDate)]
         [Display(Name = "Publishing Date")]
@@ -28,16 +26,13 @@ namespace Bookify.Net.Core.ViewModels
         public IFormFile? Image { get; set; }
         public string? ImageUrl { get; set; }
         public string? custom_img { get; set; }
+        public string Description { get; set; } = null!;
 
-        [MaxLength(50)]
+        [MaxLength(50,ErrorMessage = Errors.MaxLength)]
         public string Hall { get; set; } = null!;
 
         [Display(Name = "Is Avilable For Rentel ?")]
         public bool IsAvilableForRentel { get; set; }
-
-
-        public string Description { get; set; } = null!;
-
 
         public IList<int> SelectedCategories { get; set; } = new List<int>();
         public IEnumerable<SelectListItem>? Categories { get; set; } //To Get Items
